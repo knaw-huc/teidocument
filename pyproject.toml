@@ -6,6 +6,7 @@ authors = ["proprefenetre <proprefenetre@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+lxml = "^4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

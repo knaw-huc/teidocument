@@ -5,7 +5,9 @@ from lxml import etree
 import os.path
 import unicodedata
 
-
+log_file = os.path.join(os.path.dirname(__file__), "teidoc.log")
+FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(filename=log_file, filemode="w", format=FORMAT, level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
