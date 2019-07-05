@@ -41,9 +41,10 @@ def _tei_document():
     td = TEIDocument()
     td.load(tei_file_path)
 
-    print("\n".join(td.text().get("original")))
+    # print("\n".join(td.text().get("original")))
+    print(td.text().get("original"))
 
 
 if __name__ == '__main__':
-    _tei_reader()
+    # _tei_reader()
     _tei_document()

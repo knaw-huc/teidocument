@@ -2,7 +2,7 @@ from collections import defaultdict
 import html
 import io
 import logging
-from lxml import etree
+from lxml import etree, objectify
 import os.path
 import unicodedata
 
@@ -23,6 +23,14 @@ class TEIDocument:
         self.parser = parser
         self.tree = None
         self.nsmap = None
+
+    @classmethod
+    def from_tree(cls, tree):
+        td = cls()
+        td.tree = tree
+        td.nsmap = td._get_nsmap()
+
+        return td
 
     def load(self, source):
         """ Read source from file and parse it.
@@ -95,7 +103,7 @@ class TEIDocument:
             )
         return entities
 
-    def text(self, layers=False):
+    def text(self):
         """
         Return the first div in the <body> as a single string, unmodified.
 
@@ -157,3 +165,10 @@ class TEIDocument:
             nsmap["tei"] = nsmap.pop(None)
             log.debug(f"Replaced default namespace: {nsmap}")
         return nsmap
+
+    def _clear_namespaces(self):
+        root = etree.fromstring(etree.tostring(self.tree))
+        for elt in root.getiterator():
+            elt.tag = etree.QName(elt).localname
+        objectify.deannotate(root, cleanup_namespaces=True)
+        return root
