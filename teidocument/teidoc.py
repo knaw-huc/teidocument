@@ -19,24 +19,18 @@ class TEIDocument:
         An instance of an etree.XMLParser.
     """
 
-    def __init__(self, parser=etree.XMLParser(recover=True)):
+    def __init__(self, source=None, parser=etree.XMLParser(recover=True)):
         self.parser = parser
         self.tree = None
         self.nsmap = None
+        if source:
+            self.load(source)
 
     @classmethod
     def from_tree(cls, tree):
         td = cls()
         td.tree = tree
         td.nsmap = td._get_nsmap()
-
-        return td
-
-    @classmethod
-    def from_path(cls, path):
-        td = cls()
-        td.load(path)
-
         return td
 
     def load(self, source):
