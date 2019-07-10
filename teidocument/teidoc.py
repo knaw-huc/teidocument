@@ -19,12 +19,12 @@ class TEIDocument:
         An instance of an etree.XMLParser.
     """
 
-    def __init__(self, source=None, parser=etree.XMLParser(recover=True)):
+    def __init__(self, src=None, parser=etree.XMLParser(recover=True)):
         self.parser = parser
         self.tree = None
         self.nsmap = None
-        if source:
-            self.load(source)
+        if src:
+            self.load(src)
 
     @classmethod
     def from_tree(cls, tree):
@@ -43,17 +43,16 @@ class TEIDocument:
         if not source:
             raise ValueError("No file provided")
 
+        xml = None
         if isinstance(source, io.IOBase):
             xml = source.read()
-            log.debug(f"source: {type(source)}")
-            log.debug(f"xml: {type(xml)}")
-        elif os.path.isfile(os.path.abspath(source)):
-            log.debug(f"source: '{source}'")
-            with open(source, "r") as f:
+        elif os.path.isfile(os.path.abspath(os.path.expanduser(source))):
+            with open(os.path.expanduser(source), "r") as f:
                 xml = f.read()
+        else:
+            raise TypeError(f"Cannot load source of type {type(source)}")
 
         if isinstance(xml, bytes):
-            log.debug(f"type xml: {type(xml)} - decoding to str")
             xml = xml.decode()
 
         xml = html.unescape(xml).encode("utf-8")
@@ -115,9 +114,14 @@ class TEIDocument:
 
         Raises:
         -------
+            AttributeError: if someone forgot to load the xml
             KeyError: if kind is specified but not present in the document
 
+
         """
+        if not self.tree:
+            raise AttributeError(f"{self.__class__}: could not parse xml")
+
         text = defaultdict(list)
         expr = "//tei:text//tei:body//tei:div"
         if not self.nsmap:
