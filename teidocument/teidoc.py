@@ -43,14 +43,15 @@ class TEIDocument:
         if not source:
             raise ValueError("No file provided")
 
-        xml = None
-        if isinstance(source, io.IOBase):
+        # if isinstance(source, io.IOBase):
+        if hasattr(source, "read"):
             xml = source.read()
         elif os.path.isfile(os.path.abspath(os.path.expanduser(source))):
             with open(os.path.expanduser(source), "r") as f:
                 xml = f.read()
         else:
-            raise TypeError(f"Cannot load source of type {type(source)}")
+            xml = source
+            # raise TypeError(f"Cannot load source of type {type(source)}")
 
         if isinstance(xml, bytes):
             xml = xml.decode()
