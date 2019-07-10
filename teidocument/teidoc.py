@@ -60,6 +60,9 @@ class TEIDocument:
 
         self.tree = etree.fromstring(xml, self.parser)
 
+        if "TEI" not in self.docinfo("root_name"):
+            raise TypeError("Not a TEI-document")
+
         self.nsmap = self._get_nsmap()
         log.debug(f"loaded: {type(self.tree)}")
 
