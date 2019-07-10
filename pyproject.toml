@@ -7,7 +7,6 @@ authors = ["proprefenetre <proprefenetre@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 lxml = "^4.3"
-tei_reader = "^0.0.17"
 flask = "^1.1"
 xmltodict = "^0.12.0"
 

@@ -32,6 +32,13 @@ class TEIDocument:
 
         return td
 
+    @classmethod
+    def from_path(cls, path):
+        td = cls()
+        td.load(path)
+
+        return td
+
     def load(self, source):
         """ Read source from file and parse it.
 
@@ -103,14 +110,19 @@ class TEIDocument:
             )
         return entities
 
-    def text(self):
+    def text(self, kind=None):
         """
-        Return the first div in the <body> as a single string, unmodified.
+        Extract text from the divs in the text-element
 
-        Parameters
-        ----------
-        layers: bool
-            if true, return a list with the text of each <div> in the <body>
+        Parameters:
+        -----------
+            kind: if None, return a defaultdict(list) of 'type': [text, ...] pairs. If specified, return a list
+            containing the text found in divs of that kind
+
+        Raises:
+        -------
+            KeyError: if kind is specified but not present in the document
+
         """
         text = defaultdict(list)
         expr = "//tei:text//tei:body//tei:div"
@@ -124,12 +136,17 @@ class TEIDocument:
             for elt in d:
                 # prevent nested layers
                 if self._clean_tag(elt) == "div":
-                    log.debug(f"nested div found in /{'/'.join(self._ancestors(elt))}")
+                    log.debug(f"nested div found in {'/'.join(self._ancestors(elt))}")
                     continue
                 layer.append(elt.xpath("string()").strip())
             text[d.get("type", "default")].append(" ".join(layer))
             log.debug(f"layers: {text.keys()}")
 
+        if kind:
+            if kind in text:
+                return text[kind]
+            else:
+                raise KeyError(f"{kind} not in text")
         return text
 
     def _ancestors(self, elt):
