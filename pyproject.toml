@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "TEIDocument"
-version = "1.0.2"
+version = "1.0.4"
 description = "Extract text and metadata from TEI-documents"
 authors = ["proprefenetre <proprefenetre@gmail.com>"]
 
