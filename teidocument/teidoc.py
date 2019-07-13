@@ -135,12 +135,12 @@ class TEIDocument:
 
         for d in self.tree.xpath(expr, namespaces=self.nsmap):
             layer = []
-            for elt in d:
+            for element in d:
                 # prevent nested layers
-                if self._clean_tag(elt) == "div":
-                    log.debug(f"nested div found in {'/'.join(self._ancestors(elt))}")
+                if self._clean_tag(element) == "div":
+                    log.debug(f"nested div found in /{'/'.join(self._ancestors(element))}")
                     continue
-                layer.append(elt.xpath("string()").strip())
+                layer.append(element.xpath("string()").strip())
             text[d.get("type", "default")].append(" ".join(layer))
             log.debug(f"layers: {text.keys()}")
 
@@ -151,18 +151,18 @@ class TEIDocument:
                 raise KeyError(f"{kind} not in text")
         return text
 
-    def _ancestors(self, elt):
-        return [self._as_xpath(e) for e in reversed(list(elt.iterancestors()))]
+    def _ancestors(self, element):
+        return [self._as_xpath(e) for e in reversed(list(element.iterancestors()))]
 
-    def _descendants(self, elt):
-        return [self._as_xpath(e) for e in reversed(list(elt.iterdescendants()))]
+    def _descendants(self, element):
+        return [self._as_xpath(e) for e in reversed(list(element.iterdescendants()))]
 
-    def _as_xpath(self, elt):
-        attr = ", ".join(f"@{k}=\"{v}\"" for k, v in elt.items())
-        return f"{self._clean_tag(elt)}[{attr}]" if attr else f"{self._clean_tag(elt)}"
+    def _as_xpath(self, element):
+        attr = ", ".join(f"@{k}=\"{v}\"" for k, v in element.items())
+        return f"{self._clean_tag(element)}[{attr}]" if attr else f"{self._clean_tag(element)}"
 
-    def _clean_tag(self, elt):
-        return etree.QName(elt).localname
+    def _clean_tag(self, element):
+        return etree.QName(element).localname
 
     def _as_ElementTree(self):
         return etree.ElementTree(self.tree)
@@ -187,7 +187,7 @@ class TEIDocument:
 
     def _clear_namespaces(self):
         root = etree.fromstring(etree.tostring(self.tree))
-        for elt in root.getiterator():
-            elt.tag = etree.QName(elt).localname
+        for element in root.getiterator():
+            element.tag = etree.QName(element).localname
         objectify.deannotate(root, cleanup_namespaces=True)
         return root
