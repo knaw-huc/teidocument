@@ -4,10 +4,25 @@ import io
 import logging
 from lxml import etree, objectify
 import os.path
+import re
 import unicodedata
+
+import xmltodict
 
 
 log = logging.getLogger(__name__)
+
+
+def flatten_dict(d, parent_key="", sep="_"):
+    items = []
+    for k, v in d.items():
+        # new_key = parent_key + sep + k if parent_key else k
+        new_key = k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 class TEIDocument:
@@ -84,6 +99,14 @@ class TEIDocument:
         else:
             return info
 
+    def metadata(self):
+        """Return a dict with the teiHeader data."""
+
+        teiHeader = self.tree.xpath("//tei:teiHeader//tei:fileDesc", namespaces=self.nsmap)[0]
+        md = flatten_dict(xmltodict.parse(etree.tostring(teiHeader), xml_attribs=False))
+        log.debug(f"metadata: {md}")
+        return md
+
     def entities(self):
         """Return the attributes of all <rs>-tags in the document.
 
@@ -123,7 +146,7 @@ class TEIDocument:
 
 
         """
-        if not self.tree:
+        if self.tree is None:
             raise AttributeError(f"{self.__class__}: could not parse xml")
 
         text = defaultdict(list)
@@ -142,7 +165,7 @@ class TEIDocument:
                     continue
                 layer.append(element.xpath("string()").strip())
             text[d.get("type", "default")].append(" ".join(layer))
-            log.debug(f"layers: {text.keys()}")
+        log.debug(f"layers: {text.keys()}")
 
         if kind:
             if kind in text:
@@ -152,14 +175,14 @@ class TEIDocument:
         return text
 
     def _ancestors(self, element):
-        return [self._as_xpath(e) for e in reversed(list(element.iterancestors()))]
+        return [self._clean_tag(e) for e in reversed(list(element.iterancestors()))]
 
     def _descendants(self, element):
-        return [self._as_xpath(e) for e in reversed(list(element.iterdescendants()))]
+        return [self._clean_tag(e) for e in reversed(list(element.iterdescendants()))]
 
     def _as_xpath(self, element):
         attr = ", ".join(f"@{k}=\"{v}\"" for k, v in element.items())
-        return f"{self._clean_tag(element)}[{attr}]" if attr else f"{self._clean_tag(element)}"
+        return f"{element}[{attr}]" if attr else f"{element}"
 
     def _clean_tag(self, element):
         return etree.QName(element).localname
@@ -185,7 +208,7 @@ class TEIDocument:
             log.debug(f"Replaced default namespace: {nsmap}")
         return nsmap
 
-    def _clear_namespaces(self):
+    def _strip_namespaces(self):
         root = etree.fromstring(etree.tostring(self.tree))
         for element in root.getiterator():
             element.tag = etree.QName(element).localname
