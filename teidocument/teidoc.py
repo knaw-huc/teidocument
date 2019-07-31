@@ -34,8 +34,8 @@ class TEIDocument:
         An instance of an etree.XMLParser.
     """
 
-    def __init__(self, src=None, parser=etree.XMLParser(recover=True)):
-        self.parser = parser
+    def __init__(self, src=None, **kwargs):
+        self.parser = etree.XMLParser(recover=True, **kwargs)
         self.tree = None
         self.nsmap = None
         if src:
@@ -159,6 +159,9 @@ class TEIDocument:
         for d in self.tree.xpath(expr, namespaces=self.nsmap):
             layer = []
             for element in d:
+                if element.tag is etree.Comment:
+                    log.debug(f"skipped comment {etree.tostring(element)}")
+                    continue
                 # prevent nested layers
                 if self._clean_tag(element) == "div":
                     log.debug(f"nested div found in /{'/'.join(self._ancestors(element))}")
@@ -185,7 +188,11 @@ class TEIDocument:
         return f"{element}[{attr}]" if attr else f"{element}"
 
     def _clean_tag(self, element):
-        return etree.QName(element).localname
+        try:
+            return etree.QName(element).localname
+        except ValueError as err:
+            log.debug(err, f"tag: {etree.tostring(element)}", f"{element.name}", sep="\n")
+            return "COMMENT"
 
     def _as_ElementTree(self):
         return etree.ElementTree(self.tree)
