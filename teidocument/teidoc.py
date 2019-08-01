@@ -195,7 +195,11 @@ class TEIDocument:
             return "COMMENT"
 
     def _as_ElementTree(self):
-        return etree.ElementTree(self.tree)
+        try: 
+            return etree.ElementTree(self.tree)
+        except AssertionError as err:
+            log.debug(err, f"current tree: {self.tree}")
+            raise
 
     def _get_nsmap(self):
         """ Return a tree's namespaces, mapped to prefixes.
