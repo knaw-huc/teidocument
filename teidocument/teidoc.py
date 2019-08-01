@@ -58,7 +58,7 @@ class TEIDocument:
         if not source:
             raise ValueError("No file provided")
 
-        # if isinstance(source, io.IOBase):
+        # If Isinstance(source, io.IOBase):
         if hasattr(source, "read"):
             xml = source.read()
         elif os.path.isfile(os.path.abspath(os.path.expanduser(source))):
@@ -76,7 +76,7 @@ class TEIDocument:
         self.tree = etree.fromstring(xml, self.parser)
 
         if "TEI" not in self.docinfo("root_name"):
-            raise TypeError("Not a TEI-document")
+            raise TypeError("Invalid TEI-document - Found root node {self.docinfo('root_name')}")
 
         self.nsmap = self._get_nsmap()
         log.debug(f"loaded: {type(self.tree)}")
